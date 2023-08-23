@@ -74,28 +74,29 @@ def get_findings_by_scan_id(scan_id, token):
     make_table(findings, ['pretty_category', 'severity', 'final_risk_score', 'id'])
     return findings
 
-arg_dict = ast.literal_eval(str(vars(args)))
-del arg_dict['curr_token']
-del arg_dict['demo']
-if not any(arg_dict.values()):
-    print("")
-    print("****Please supply one of the 'get' arguments below.****")
-    print("")
-    parser.print_help()
-    exit(1)
-
-token = None
-if args.demo == True:
-    token=init_auth_demo()
+if args.curr_token != None:
+    token = args.curr_token
+    arg_dict = ast.literal_eval(str(vars(args)))
+    del arg_dict['curr_token']
+    del arg_dict['demo']
+    if not any(arg_dict.values()):
+        print("")
+        print("****Please supply one of the 'get' arguments below.****")
+        print("")
+        parser.print_help()
+        exit(1)
 else:
-    print("Demo creds/app only at the moment.")
+    token = None
+    if args.demo == True:
+        token=init_auth_demo()
+    else:
+        print("Demo creds/app only at the moment.")
 
-if token != None:
-    if args.list_orgs:
-        list_organizations(token)
-    if args.org_id_supplied:
-        list_apps_by_id(args.org_id_supplied, token)
-    if args.app_id_supplied:
-        get_scans_by_app_id(args.app_id_supplied, token)
-    if args.scan_id_supplied:
-        get_findings_by_scan_id(args.scan_id_supplied, token)
+if args.list_orgs:
+    list_organizations(token)
+if args.org_id_supplied:
+    list_apps_by_id(args.org_id_supplied, token)
+if args.app_id_supplied:
+    get_scans_by_app_id(args.app_id_supplied, token)
+if args.scan_id_supplied:
+    get_findings_by_scan_id(args.scan_id_supplied, token)
