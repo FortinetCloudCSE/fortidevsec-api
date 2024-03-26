@@ -4,6 +4,7 @@ from prettytable import PrettyTable
 parser = argparse.ArgumentParser()
 parser.add_argument('--token', dest='curr_token', required=False, help='optionally supply a valid access token')
 parser.add_argument('--demo', dest='demo', action='store_true', required=False, help='work with demo application')
+parser.add_argument('--max-entries', dest='max_entries', type=int, required=False, help='max number of items to return, default is 5 if unset')
 grp = parser.add_mutually_exclusive_group()
 grp.add_argument('--get-orgs', dest='list_orgs', action='store_true', required=False, help='list organizations associated with user account')
 grp.add_argument('--get-apps', dest='org_id_supplied', type=int, required=False, help='list apps for a given org id')
@@ -13,7 +14,6 @@ args = parser.parse_args()
 
 #URLs
 base_url = "https://fortidevsec.forticloud.com/"
-
 get_token_url = "api/v1/login/access-token"
 demo_url = "api/v1/login/demo-user"
 orgs_url = "api/v1/dashboard/get_orgs"
@@ -31,21 +31,25 @@ def init_auth_demo():
         token = args.curr_token
     return token
 
-def list_organizations(curr_token):
-    headers = {}
-    headers["Authorization"] = "Bearer " + token
-    get_orgs_call=requests.get(base_url+orgs_url, headers=headers)
-    org_ids = re.findall("\"id\"\:(\d)", get_orgs_call.text)
-    print(org_ids)
-    return org_ids
-
 def make_table(data, fields):
     mytuples=[([x[field] for field in fields]) for x in data]
     tuples_sorted=sorted(mytuples, key=lambda x: x[len(fields)-1], reverse=True)
     mytable = PrettyTable([field for field in fields])
-    for x in range(min(len(tuples_sorted),5)):
+    if args.max_entries != None:
+        max_ent = args.max_entries
+    else:
+        max_ent = 5
+    for x in range(min(len(tuples_sorted),max_ent)):
         mytable.add_row([tuples_sorted[x][i] for i in range(len(fields))])
     print(mytable)
+
+def list_organizations(curr_token):
+    headers = {}
+    headers["Authorization"] = "Bearer " + token
+    get_orgs_call=requests.get(base_url+orgs_url, headers=headers)
+    org_info=json.loads(get_orgs_call.text)
+    make_table(org_info, ['name', 'id'])
+    return org_info
 
 def list_apps_by_id(id, token):
     params = {'org_id': id}
@@ -66,11 +70,15 @@ def get_scans_by_app_id(app_id, token):
     return scans
 
 def get_findings_by_scan_id(scan_id, token):
-    params = {'scan_id': scan_id}
+    if args.max_entries != None:
+        params = {'scan_id': scan_id, 'limit': args.max_entries}
+    else:
+        params = {'scan_id': scan_id}
     headers = {}
     headers["Authorization"] = "Bearer " + token
     get_findings_call=requests.get(base_url+findings_url, params=params, headers=headers)
     findings=json.loads(get_findings_call.text)
+    print(len(findings))
     make_table(findings, ['pretty_category', 'severity', 'final_risk_score', 'id'])
     return findings
 
