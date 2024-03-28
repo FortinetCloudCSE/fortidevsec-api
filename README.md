@@ -7,14 +7,14 @@ Some scripts for working with the FortiDevSec API(beta): [FNDN link](https://fnd
 
 Requires Python 3 (tested on 3.10.6).
 
-This script currently only works with the demo application at [https://fortidevsec.forticloud.com/#/demo/](https://fortidevsec.forticloud.com/#/demo/).
+The following steps detail working with the FortiDevSec demo application ![here](https://fortidevsec.forticloud.com/#/demo/). To work with your FortiDevSec account organization, omit the '--demo' flag and retrieve an API token as detailed ![here](https://docs.fortinet.com/document/fortidevsec/24.1.0/user-guide/2187/api-access).
 
 <pre>
-##### Get an authentication token
+##### Get an authentication token to work with the demo FortiDevSec organization.
 > python fortidevsec-api-call.py --demo
 <i>access token: abcd1234efgh</i>
 
-##### Get list of organizations associated with current account
+##### Get the demo organization id
 > python fortidevsec-api-call.py --token abcd1234efgh --demo --get-orgs
 <i>['2']</i>
 
